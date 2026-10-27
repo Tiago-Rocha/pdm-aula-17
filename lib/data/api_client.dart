@@ -54,7 +54,8 @@ class ApiClient {
 
   /// A new request each time: an http.Request can only be sent once.
   Future<http.Response> _request(String method, String path) async {
-    final token = _token ??= await _fetchToken(); // TODO 1
+    // the user's token when someone is logged in; otherwise, the app's
+    final token = userToken ?? (_token ??= await _fetchToken());
     final request = http.Request(method, Uri.parse('$baseUrl$path'))
       ..headers['Authorization'] = 'Bearer $token';
     final streamed = await request.send().timeout(const Duration(seconds: 10));
