@@ -35,6 +35,19 @@ class SessionNotifier extends ChangeNotifier {
     }
   }
 
+  /// After a 401: a new access token, from the refresh token.
+  Future<bool> renew() async {
+    final current = session;
+    if (current == null) return false;
+    try {
+      session = await _auth.refresh(current.refreshToken);
+      notifyListeners(); // the session has a new access token
+      return true;
+    } catch (_) {
+      return false; // the request fails with the 401 it got
+    }
+  }
+
   Future<void> login(String email, String password) =>
       _start(() => _auth.login(email, password));
 

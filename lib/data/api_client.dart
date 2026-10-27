@@ -23,6 +23,8 @@ class ApiClient {
   final String clientSecret;
   String? _token; // the app's token, from clientId and clientSecret
   String? userToken; // the logged-in user's token, set by AuthRepository
+  // asks for a new user token; main.dart sets it, until then it says no
+  Future<bool> Function() renewSession = () async => false;
 
   Future<dynamic> get(String path) => _send('GET', path);
 
@@ -46,8 +48,11 @@ class ApiClient {
 
   /// GET, PUT and DELETE come through here, always with a token.
   Future<dynamic> _send(String method, String path) async {
-    final response = await _request(method, path);
-    // TODO 2: on a 401, renew the session and repeat the request once
+    var response = await _request(method, path);
+    // 401: the token expired. Renew the session and repeat, only once.
+    if (response.statusCode == 401 && await renewSession()) {
+      response = await _request(method, path);
+    }
     _check(response);
     return response.body.isEmpty ? null : jsonDecode(response.body);
   }

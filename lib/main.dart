@@ -22,7 +22,7 @@ void main() async {
   final api = ApiClient(clientId: clientId, clientSecret: clientSecret);
   final session = SessionNotifier(AuthRepository(api), const SessionStore())
     ..restore();
-  // TODO 2: on a 401, the ApiClient asks the session to renew
+  api.renewSession = session.renew; // on a 401, the ApiClient asks here
   runApp(
     MultiProvider(
       providers: [
